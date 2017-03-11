@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.daxi.jira.JiraTools.utils.PropertiesUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
@@ -32,7 +33,7 @@ public class JiraService {
 	public JSONObject queryIssue(String jql) {
 		JSONObject jsObj = new JSONObject();
 		try {
-			String url = Const.JIRA_REST_BASE_URL + "/search?jql=" + jql;
+			String url = PropertiesUtils.get("jira_rest_base_url") + "/search?jql=" + jql;
 			
 			Map<String, String> headers = new HashMap<String, String>();
 			headers.put("Authorization", Const.JIRA_BASIC_AUTH);
@@ -46,7 +47,7 @@ public class JiraService {
 	}
 	
 	/**
-	 * 查询待发布的Jira对应的Key，以空格分割的方式返回
+	 * 查询待发布的Jira对应的Key数组
 	 * status changed from verify to "Ready for Deploy" AFTER "2016/12/28 18:30"
 	 * @lastTime yyyyMMddHHmm
 	 * @return

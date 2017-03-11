@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.daxi.jira.JiraTools.utils.PropertiesUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -36,7 +37,7 @@ public class FisheyeService {
 	public JSONObject queryFisheye(String eyeql) {
 		JSONObject jsObj = new JSONObject();
 		try {
-			String url = Const.FISHEYE_REST_BASE_URL + "/search-v1/query/" + fisheyeRepoName + "?query=" + eyeql;
+			String url = PropertiesUtils.get("fisheye_rest_base_url") + "/search-v1/query/" + fisheyeRepoName + "?query=" + eyeql;
 			
 			Map<String, String> headers = new HashMap<String, String>();
 			headers.put("Authorization", Const.FISHEYE_BASIC_AUTH);
@@ -100,7 +101,6 @@ public class FisheyeService {
 						FileUtils.writeToFile(codeListFileName, string+"\n", true);
 					}
 				}
-				
 			} catch (Exception e) {
 				return MessageFormat.format(Const.MSG_ERROR, e.getMessage());
 			}
