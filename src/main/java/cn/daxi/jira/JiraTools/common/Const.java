@@ -16,7 +16,7 @@ public class Const {
 	// Common
 	public static String MSG_SUCCESS = "success";
 	public static String MSG_ERROR = "error with {0}";
-	public static String DEPLOY_LOG_DIR = "/home/deploy/deploy-logs";
+	public static String DEPLOY_LOG_DIR = "/home/deploy/";
 
 	static {
 		try {
@@ -33,7 +33,7 @@ public class Const {
                 // 截取路径中的jar包名
                 filePath = filePath.substring(0, filePath.lastIndexOf("/"));
             }
-            DEPLOY_LOG_DIR = filePath + "/deploy/deploy-logs";
+            DEPLOY_LOG_DIR = filePath + "/deploy/";
 		} catch (Exception e) {
             e.printStackTrace();
         }

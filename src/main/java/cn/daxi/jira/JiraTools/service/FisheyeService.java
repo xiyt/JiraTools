@@ -84,15 +84,15 @@ public class FisheyeService {
 	 * @param codeList
 	 * @return
 	 */
-	public String saveCodeListToFile(String[] codeList, String currentDate, String lastDeployDate) {
+	public String saveCodeListToFile(String[] codeList, String lastDeployDate) {
 		if (codeList == null || codeList.length == 0) {
 			return MessageFormat.format(Const.MSG_ERROR, "the code list is empty!");
 		} else {
 			try {
 				// 代码清单文件
-				String codeListFileName = Const.DEPLOY_LOG_DIR + "/code-list-" + currentDate + "-" + lastDeployDate + ".txt";
+				String codeListFileName = Const.DEPLOY_LOG_DIR + "/code-list-update.txt";
 				// sql文件清单文件
-				String sqlListFileName = Const.DEPLOY_LOG_DIR + "/sql-file-list-" + currentDate + "-" + lastDeployDate + ".txt";
+				String sqlListFileName = Const.DEPLOY_LOG_DIR + "/sql-file-list-update.txt";
 				for (String string : codeList) {
 					String fileExt = string.substring(string.lastIndexOf(".") + 1);
 					if (StringUtils.isNotEmpty(fileExt) && fileExt.toLowerCase().equals("sql")) {
