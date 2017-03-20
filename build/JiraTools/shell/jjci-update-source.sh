@@ -36,6 +36,10 @@ if [ "$result" = "success" ]
 	do
 		svn update ${project_workspace}/$line
 	done
+	# 将代码转入待执行/编译清单
+	cat $code_list_file >> ${jiratools_path}/deploy/code-list-execute.txt
+	: > $code_list_file;
+
 
 	# 更新sql文件清单
 	echo "-----开始更新脚本清单文件-----"
@@ -43,6 +47,9 @@ if [ "$result" = "success" ]
 	do
 		svn update ${project_workspace}/$line
 	done
+	# 将脚本转入待执行/编译清单
+	cat $sql_file_list_file >> ${jiratools_path}/deploy/sql-file-list-execute.txt
+	: > $sql_file_list_file;
 
 	# 代码的最后更新时间
 	if [ "$JIRA_ISSUE_KEY" == "" ]

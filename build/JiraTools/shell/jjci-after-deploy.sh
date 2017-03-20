@@ -7,13 +7,13 @@ readonly jiratools_path="${project_workspace}/JiraTools"
 
 # 复制代码清单文件到日志目录
 echo "-----复制代码清单文件到日志目录-----"
-yes | cp -rf "${jiratools_path}/deploy/code-list-update.txt" "${jiratools_path}/deploy/deploy-logs/code-list-deploy-${BUILD_NUMBER}.txt"
-: > ${jiratools_path}/deploy/code-list-update.txt
+yes | cp -rf "${jiratools_path}/deploy/code-list-deploy.txt" "${jiratools_path}/deploy/deploy-logs/code-list-deploy-${BUILD_NUMBER}.txt"
+: > ${jiratools_path}/deploy/code-list-deploy.txt
 
 # 复制脚本清单文件到日志目录
 echo "-----复制脚本清单文件到日志目录-----"
-yes | cp -rf "${jiratools_path}/deploy/sql-file-list-update.txt" "${jiratools_path}/deploy/deploy-logs/sql-file-list-deploy-${BUILD_NUMBER}.txt"
-: > ${jiratools_path}/deploy/sql-file-list-update.txt
+yes | cp -rf "${jiratools_path}/deploy/sql-file-list-deploy.txt" "${jiratools_path}/deploy/deploy-logs/sql-file-list-deploy-${BUILD_NUMBER}.txt"
+: > ${jiratools_path}/deploy/sql-file-list-deploy.txt
 
 echo "-----发布后续工作完成！-----"
 exit 0

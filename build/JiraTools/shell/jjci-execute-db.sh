@@ -5,7 +5,7 @@ readonly project_workspace="${JENKINS_HOME}/workspace/new-blackcat"
 readonly jiratools_path="${project_workspace}/JiraTools"
 
 # 该文件中保存了需要执行的sql脚本文件路径
-sql_file_list_file="${jiratools_path}/deploy/sql-file-list-update.txt"
+sql_file_list_file="${jiratools_path}/deploy/sql-file-list-execute.txt"
 
 echo "-----开始执行脚本文件-----"
 for line in $(cat $sql_file_list_file)
@@ -16,5 +16,9 @@ do
 		exit 1
 	fi
 done
+
+# 将脚本清单写入待发布清单
+cat ${jiratools_path}/deploy/sql-file-list-execute.txt >> ${jiratools_path}/deploy/sql-file-list-deploy.txt
+: > ${jiratools_path}/deploy/sql-file-list-execute.txt
 echo "-----执行脚本文件完成！-----"
 exit 0
