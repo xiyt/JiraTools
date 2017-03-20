@@ -3,6 +3,7 @@
 readonly project_workspace="${JENKINS_HOME}/workspace/new-blackcat"
 # JiraTools的目录：请修改，默认放到项目根目录
 readonly jiratools_path="${project_workspace}/JiraTools"
+# 该shell执行时所在的
 
 # 复制代码清单文件到日志目录
 echo "-----复制代码清单文件到日志目录-----"

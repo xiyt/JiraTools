@@ -20,13 +20,8 @@ public class Const {
 
 	static {
 		try {
-            String jiraUser = PropertiesUtils.get("jira_user");
-            String jiraPassword = PropertiesUtils.get("jira_password");
-            JIRA_BASIC_AUTH += Base64Utils.base64Encode(jiraUser + ":" + jiraPassword);
-
-            String fisheyeUser = PropertiesUtils.get("fisheye_user");
-            String fisheyePassword = PropertiesUtils.get("fisheye_password");
-			FISHEYE_BASIC_AUTH += Base64Utils.base64Encode(fisheyeUser + ":" + fisheyePassword);
+            JIRA_BASIC_AUTH += PropertiesUtils.get("jira_auth");
+			FISHEYE_BASIC_AUTH += PropertiesUtils.get("fisheye_auth");
 
             String filePath = App.class.getProtectionDomain().getCodeSource().getLocation().getPath();
             if (filePath.endsWith(".jar")) {// 可执行jar包运行的结果里包含".jar"

@@ -25,7 +25,7 @@ public class PropertiesUtils {
                     // 截取路径中的jar包名
                     filePath = filePath.substring(0, filePath.lastIndexOf("/"));
                 }
-                String propertiesFilePath = filePath + "/jiratools.properties";
+                String propertiesFilePath = filePath + "/JiraTools.properties";
                 InputStream is = new FileInputStream(propertiesFilePath);
                 resource = new PropertyResourceBundle(is);
             } catch (Exception e) {

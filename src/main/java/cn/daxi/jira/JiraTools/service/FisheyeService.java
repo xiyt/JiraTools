@@ -84,7 +84,7 @@ public class FisheyeService {
 	 * @param codeList
 	 * @return
 	 */
-	public String saveCodeListToFile(String[] codeList, String lastDeployDate) {
+	public String saveCodeListToFile(String[] codeList) {
 		if (codeList == null || codeList.length == 0) {
 			return MessageFormat.format(Const.MSG_ERROR, "the code list is empty!");
 		} else {

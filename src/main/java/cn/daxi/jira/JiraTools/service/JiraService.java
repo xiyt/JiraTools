@@ -1,11 +1,11 @@
 package cn.daxi.jira.JiraTools.service;
 
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import cn.daxi.jira.JiraTools.utils.PropertiesUtils;
+import com.sun.deploy.panel.ITreeNode;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
@@ -16,6 +16,8 @@ import com.alibaba.fastjson.JSONObject;
 import cn.daxi.jira.JiraTools.bean.HttpClientReturn;
 import cn.daxi.jira.JiraTools.common.Const;
 import cn.daxi.jira.JiraTools.utils.HttpClientUtils;
+
+import javax.sound.midi.Soundbank;
 
 /**
  * https://docs.atlassian.com/jira/REST/6.3.6/
@@ -29,7 +31,12 @@ public class JiraService {
 	public JiraService(String projectName) {
 		this.projectName = projectName;
 	}
-	
+
+    /**
+     * 根据JQL语句查询jira问题
+     * @param jql
+     * @return
+     */
 	public JSONObject queryIssue(String jql) {
 		JSONObject jsObj = new JSONObject();
 		try {
@@ -86,4 +93,73 @@ public class JiraService {
 		}
 		return keys;
 	}
+
+    /**
+     * 根据Jira key从jira任务备注中获取清单列表
+     * @return
+     */
+//	public String[] queryCodeListFromCommentByKeys(String[] jiraKeys) {
+//        String[] codeList = new String[]{};
+//        try {
+//            for (String key : jiraKeys) {
+//                String url = PropertiesUtils.get("jira_rest_base_url") + "/issue/"+key+"/comment";
+//
+//                Map<String, String> headers = new HashMap<String, String>();
+//                headers.put("Authorization", Const.JIRA_BASIC_AUTH);
+//                headers.put("Content-Type", "application/json");
+//                HttpClientReturn result = HttpClientUtils.executeHttpRequest("GET", url, headers, null, null, null);
+//                JSONObject jsObj = JSON.parseObject(result.getContent());
+//
+//                if (jsObj != null && jsObj.containsKey("comments")) {
+//                    JSONArray commentArr = jsObj.getJSONArray("comments");
+//                    for (int i = 0; i < commentArr.size(); i++) {
+//                        JSONObject comment = commentArr.getJSONObject(i);
+//                        String body = comment.getString("body");
+//                        // 判断是否为代码清单备注
+//                        if (StringUtils.isNotEmpty(body) && body.startsWith(PropertiesUtils.get("jira_comment_code_list_prefix"))) {
+//                            String[] bodyLineArr = body.split("\\r\\n");
+//                            codeList = ArrayUtils.addAll(codeList, ArrayUtils.subarray(bodyLineArr, 1, bodyLineArr.length));
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return codeList;
+//    }
+
+    /**
+     * 根据Jira key从jira任务的代码列表字段中获取清单列表
+     * @return
+     */
+    public String[] queryCodeListFromCustomFieldByKeys(String[] jiraKeys) {
+        String[] codeList = new String[]{};
+        // 自定义代码列表字段的字段ID
+        String codeListField = PropertiesUtils.get("code_list_field");
+        try {
+            for (String key : jiraKeys) {
+                String url = PropertiesUtils.get("jira_rest_base_url") + "/issue/"+key+"?fields=" + codeListField;
+
+                Map<String, String> headers = new HashMap<String, String>();
+                headers.put("Authorization", Const.JIRA_BASIC_AUTH);
+                headers.put("Content-Type", "application/json");
+                HttpClientReturn result = HttpClientUtils.executeHttpRequest("GET", url, headers, null, null, null);
+                JSONObject jsObj = JSON.parseObject(result.getContent());
+
+                if (jsObj != null && jsObj.containsKey("fields")) {
+                    JSONObject fieldObj = jsObj.getJSONObject("fields");
+                    // 自定义字段：代码列表
+                    String body = fieldObj.getString(codeListField);
+                    // 判断是否为代码清单备注
+                    if (StringUtils.isNotEmpty(body)) {
+                        codeList = ArrayUtils.addAll(codeList, body.split("\\r\\n"));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return codeList;
+    }
 }
