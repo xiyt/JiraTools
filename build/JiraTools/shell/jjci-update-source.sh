@@ -24,7 +24,11 @@ echo "-----触发此次构建的Jira Key：${JIRA_ISSUE_KEY}-----"
 # 调用Java将从上次发布时间开始到现在，
 # jira状态从from变为to的单子关联的代码保持成代码清单文件
 result=$(java -jar ${jiratools_path}/JiraTools.jar "$JIRA_ISSUE_KEY" $last_update_date)
-if [ "$result" = "success" ]
+
+echo "-----获取Jira Key和代码清单结果如下-----"
+echo $result
+
+if [[ "$result" =~ "success" ]]
 	then
 		# 该文件中保存了需要更新的代码清单
 		code_list_file="${jiratools_path}/deploy/code-list-update.txt"
@@ -61,5 +65,6 @@ if [ "$result" = "success" ]
 	echo "-----资源更新完成！-----"
 else
 	echo $result
+	exit 1
 fi
 exit 0

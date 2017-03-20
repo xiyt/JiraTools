@@ -6,7 +6,6 @@ import cn.daxi.jira.JiraTools.service.JiraService;
 import cn.daxi.jira.JiraTools.utils.PropertiesUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import java.text.MessageFormat;
 
 /**
@@ -30,28 +29,34 @@ public class App {
 		FisheyeService fs = new FisheyeService(PropertiesUtils.get("fisheye_repo_name"));
 
 		// 根据状态查询Jira keys
-		String[] jiraKeyArr = null;
+		String[] jiraKeyArr = new String[]{};
 		if (StringUtils.isNotEmpty(jiraKeys)) {
             jiraKeyArr = jiraKeys.split(",");
 		} else {
 		    // 查询需要发布的Jira key
             jiraKeyArr = js.queryIssueKeyForNextDeploy(lastDeployDate, PropertiesUtils.get("jira_status_from"), PropertiesUtils.get("jira_status_to"));
 		}
-		// 根据Jira keys获取关联的代码清单
-        String[] codeList = new String[]{};
 
-		// Fisheye方式方式获取代码清单
-		if ("0".equals(PropertiesUtils.get("code_list_mode")) || "1".equals(PropertiesUtils.get("code_list_mode"))) {
-		    String[] codeListByFisheye = fs.queryCodeListByJiraKeys(jiraKeyArr);
-            codeList = ArrayUtils.addAll(codeList, codeListByFisheye);
-        }
+        String result = Const.MSG_SUCCESS;
+		if (null != jiraKeyArr && jiraKeyArr.length > 0) {
+            System.out.println(ArrayUtils.toString(jiraKeyArr));
 
-        // 代码列表字段方式获取代码清单
-        if ("0".equals(PropertiesUtils.get("code_list_mode")) || "2".equals(PropertiesUtils.get("code_list_mode"))) {
-            String[] codeListByComment = js.queryCodeListFromCustomFieldByKeys(jiraKeyArr);
-            codeList = ArrayUtils.addAll(codeList, codeListByComment);
+            // 根据Jira keys获取关联的代码清单
+            String[] codeList = new String[]{};
+
+            // Fisheye方式方式获取代码清单
+            if ("0".equals(PropertiesUtils.get("code_list_mode")) || "1".equals(PropertiesUtils.get("code_list_mode"))) {
+                String[] codeListByFisheye = fs.queryCodeListByJiraKeys(jiraKeyArr);
+                codeList = ArrayUtils.addAll(codeList, codeListByFisheye);
+            }
+
+            // 代码列表字段方式获取代码清单
+            if ("0".equals(PropertiesUtils.get("code_list_mode")) || "2".equals(PropertiesUtils.get("code_list_mode"))) {
+                String[] codeListByComment = js.queryCodeListFromCustomFieldByKeys(jiraKeyArr);
+                codeList = ArrayUtils.addAll(codeList, codeListByComment);
+            }
+            result = fs.saveCodeListToFile(codeList);
         }
-		String result = fs.saveCodeListToFile(codeList);
 		System.out.println(result);
 	}
 }

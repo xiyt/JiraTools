@@ -5,6 +5,8 @@ import cn.daxi.jira.JiraTools.common.Const;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
@@ -26,8 +28,8 @@ public class PropertiesUtils {
                     filePath = filePath.substring(0, filePath.lastIndexOf("/"));
                 }
                 String propertiesFilePath = filePath + "/JiraTools.properties";
-                InputStream is = new FileInputStream(propertiesFilePath);
-                resource = new PropertyResourceBundle(is);
+                Reader reader = new InputStreamReader(new FileInputStream(propertiesFilePath), "UTF-8");
+                resource = new PropertyResourceBundle(reader);
             } catch (Exception e) {
                 System.out.println(MessageFormat.format(Const.MSG_ERROR, "load properties file!"));
             }

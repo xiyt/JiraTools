@@ -74,7 +74,7 @@ public class JiraService {
 			lastTime = cn.daxi.jira.JiraTools.utils.DateUtils.formatDate(lastDate, "yyyy/MM/dd HH:mm");
 			
 			// 查询待发布的Jira对应的Key
-			String jql = "project=''{0}'' and status changed from ''{1}'' to ''{2}'' after ''{3}''&fields=id,key";
+			String jql = "project=''{0}'' and type=Task and status changed from ''{1}'' to ''{2}'' after ''{3}''&fields=id,key";
 			jql = MessageFormat.format(jql, projectName, statusFrom, statusTo, lastTime);
 			jql = jql.replace(" ", "+");
 			JSONObject jsObj = queryIssue(jql);
