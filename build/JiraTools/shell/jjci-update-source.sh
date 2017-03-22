@@ -28,6 +28,12 @@ result=$(java -jar ${jiratools_path}/JiraTools.jar "$JIRA_ISSUE_KEY" $last_updat
 echo "-----获取Jira Key和代码清单结果如下-----"
 echo $result
 
+# 包含错误直接退出
+if [[ "$result" =~ "error" ]]
+	then exit 1
+fi
+
+# 执行成功
 if [[ "$result" =~ "success" ]]
 	then
 		# 该文件中保存了需要更新的代码清单
@@ -56,7 +62,7 @@ if [[ "$result" =~ "success" ]]
 	: > $sql_file_list_file;
 
 	# 代码的最后更新时间
-	if [ "$JIRA_ISSUE_KEY" == "" ]
+	if [[ "$result" =~ "JIRA_KEYS_MODE_AUTO" ]]
 		then 
 			echo "-----写入最后更新时间信息-----"
 			echo $current_date >> ${jiratools_path}/deploy/deploy.info 

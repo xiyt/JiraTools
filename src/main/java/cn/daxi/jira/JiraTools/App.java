@@ -28,18 +28,30 @@ public class App {
 		JiraService js = new JiraService(PropertiesUtils.get("jira_poject_key"));
 		FisheyeService fs = new FisheyeService(PropertiesUtils.get("fisheye_repo_name"));
 
-		// 根据状态查询Jira keys
+		// 三个层次获取jira key，从具体到宽泛
+        // 1、JIRA_KEYS_MODE_ARGS：命令行参数中，指定了jira key
+        // 2、JIRA_KEYS_MODE_SPECIFIC：通过查询特定jira获取到描述信息中的jira key，对应配置文件中的jira_key_for_specific_deploy
+        // 3、JIRA_KEYS_MODE_AUTO：通过上次发布时间和状态，获取jira key
 		String[] jiraKeyArr = new String[]{};
+		String jiraKeyMode = "";
 		if (StringUtils.isNotEmpty(jiraKeys)) {
+		    // 命令参数中的key
             jiraKeyArr = jiraKeys.split(",");
+            jiraKeyMode = "JIRA_KEYS_MODE_ARGS";
 		} else {
-		    // 查询需要发布的Jira key
-            jiraKeyArr = js.queryIssueKeyForNextDeploy(lastDeployDate, PropertiesUtils.get("jira_status_from"), PropertiesUtils.get("jira_status_to"));
+		    // jira_key_for_specific_deploy方式
+            jiraKeyArr = js.queryIssueKeyForSpecificDeploy();
+            jiraKeyMode = "JIRA_KEYS_MODE_SPECIFIC";
+            if (ArrayUtils.isEmpty(jiraKeyArr)) {
+                // 根据状态查询需要发布的Jira key
+                jiraKeyArr = js.queryIssueKeyForNextDeploy(lastDeployDate, PropertiesUtils.get("jira_status_from"), PropertiesUtils.get("jira_status_to"));
+                jiraKeyMode = "JIRA_KEYS_MODE_AUTO";
+            }
 		}
 
         String result = Const.MSG_SUCCESS;
 		if (null != jiraKeyArr && jiraKeyArr.length > 0) {
-            System.out.println(ArrayUtils.toString(jiraKeyArr));
+            System.out.println(jiraKeyMode + ":" + ArrayUtils.toString(jiraKeyArr));
 
             // 根据Jira keys获取关联的代码清单
             String[] codeList = new String[]{};

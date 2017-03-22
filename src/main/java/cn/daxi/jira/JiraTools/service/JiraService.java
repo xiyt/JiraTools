@@ -1,23 +1,20 @@
 package cn.daxi.jira.JiraTools.service;
 
-import java.text.MessageFormat;
-import java.util.*;
-
+import cn.daxi.jira.JiraTools.bean.HttpClientReturn;
+import cn.daxi.jira.JiraTools.common.Const;
+import cn.daxi.jira.JiraTools.utils.HttpClientUtils;
 import cn.daxi.jira.JiraTools.utils.PropertiesUtils;
-import com.sun.deploy.panel.ITreeNode;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
-import cn.daxi.jira.JiraTools.bean.HttpClientReturn;
-import cn.daxi.jira.JiraTools.common.Const;
-import cn.daxi.jira.JiraTools.utils.HttpClientUtils;
-
-import javax.sound.midi.Soundbank;
+import java.text.MessageFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * https://docs.atlassian.com/jira/REST/6.3.6/
@@ -130,6 +127,61 @@ public class JiraService {
 //    }
 
     /**
+     * 从通过查询特定jira获取到描述信息中的jira key，对应配置文件中的jira_key_for_specific_deploy
+     * @return
+     */
+    public String[] queryIssueKeyForSpecificDeploy() {
+        String[] jiraKeys = new String[]{};
+
+        String optJiraKey = PropertiesUtils.get("jira_key_for_specific_deploy");
+        if (StringUtils.isNotEmpty(optJiraKey)) {
+            try {
+                String url = PropertiesUtils.get("jira_rest_base_url") + "/issue/"+optJiraKey+"?fields=description";
+
+                Map<String, String> headers = new HashMap<String, String>();
+                headers.put("Authorization", Const.JIRA_BASIC_AUTH);
+                headers.put("Content-Type", "application/json");
+                HttpClientReturn getResult = HttpClientUtils.executeHttpRequest("GET", url, headers, null, null, null);
+                JSONObject jsObj = JSON.parseObject(getResult.getContent());
+
+                if (jsObj != null && jsObj.containsKey("fields")) {
+                    JSONObject fieldObj = jsObj.getJSONObject("fields");
+                    // 从描述信息中获取Jira key
+                    String description = fieldObj.getString("description");
+                    if (StringUtils.isNotEmpty(description)) {
+                        jiraKeys = description.split(",");
+
+                        // 添加备注
+                        String commentUrl = PropertiesUtils.get("jira_rest_base_url") + "/issue/" + optJiraKey + "/comment";
+                        JSONObject comment = new JSONObject();
+                        comment.put("body", "Jenkins has received the keys: " + description);
+                        HttpClientReturn addCommentResult = HttpClientUtils.executeHttpRequest("POST", commentUrl, headers, null, comment.toJSONString(),null);
+                        if (addCommentResult.getStatusCode() == 201) {// 添加备注成功
+
+                            // 更新描述信息为空
+                            String descriptionUrl = PropertiesUtils.get("jira_rest_base_url") + "/issue/" + optJiraKey;
+                            JSONObject fields = new JSONObject();
+                            fields.put("description", "");
+                            JSONObject update = new JSONObject();
+                            update.put("fields", fields);
+                            HttpClientReturn updateResult = HttpClientUtils.executeHttpRequest("PUT", descriptionUrl, headers, null, update.toJSONString(), null);
+
+                            if (updateResult.getStatusCode() != 200 && updateResult.getStatusCode() != 204) {// 修改描述信息失败
+                                System.out.println(MessageFormat.format(Const.MSG_ERROR, "update the description for jira " + optJiraKey));
+                            }
+                        } else {
+                            System.out.println(MessageFormat.format(Const.MSG_ERROR, "add the comment for jira " + optJiraKey));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return jiraKeys;
+    }
+
+    /**
      * 根据Jira key从jira任务的代码列表字段中获取清单列表
      * @return
      */
@@ -161,5 +213,10 @@ public class JiraService {
             e.printStackTrace();
         }
         return codeList;
+    }
+
+    public static void main(String[] args) {
+        JiraService jiraService = new JiraService("");
+        jiraService.queryIssueKeyForSpecificDeploy();
     }
 }

@@ -9,6 +9,7 @@ import org.apache.http.util.EntityUtils;
 public class HttpClientReturn {
 
 	private String status;
+	private int statusCode;
 	private Header[] requestHeaders;
 	private Header[] responseHeaders;
 	private String content;
@@ -17,10 +18,13 @@ public class HttpClientReturn {
 	
 	public HttpClientReturn(HttpRequestBase request, HttpEntity entity, CloseableHttpResponse response) throws Exception{
 		try {
-			this.content = EntityUtils.toString(entity);
+		    if (null != entity) {
+                this.content = EntityUtils.toString(entity);
+            }
 			this.requestHeaders = request.getAllHeaders();
 			this.responseHeaders = response.getAllHeaders();
 			this.status = response.getStatusLine().toString();
+			this.statusCode = response.getStatusLine().getStatusCode();
 			EntityUtils.consume(entity);
 		} finally {
             response.close();
@@ -84,4 +88,12 @@ public class HttpClientReturn {
 	public void setContent(String content) {
 		this.content = content;
 	}
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
 }
