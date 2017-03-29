@@ -69,10 +69,11 @@ public class JiraService {
 			Date lastDate = DateUtils.parseDate(lastTime, "yyyyMMddHHmm");
 			lastDate = DateUtils.addMinutes(lastDate, -1);
 			lastTime = cn.daxi.jira.JiraTools.utils.DateUtils.formatDate(lastDate, "yyyy/MM/dd HH:mm");
+			String issueTypes = PropertiesUtils.get("issue_types_for_code_list");
 			
 			// 查询待发布的Jira对应的Key
-			String jql = "project=''{0}'' and type=Task and status changed from ''{1}'' to ''{2}'' after ''{3}''&fields=id,key";
-			jql = MessageFormat.format(jql, projectName, statusFrom, statusTo, lastTime);
+			String jql = "project=''{0}'' and type in ({1}) and status=''{2}'' and status changed from ''{3}'' to ''{4}'' after ''{5}''&fields=id,key";
+			jql = MessageFormat.format(jql, projectName, issueTypes, statusTo, statusFrom, statusTo, lastTime);
 			jql = jql.replace(" ", "+");
 			JSONObject jsObj = queryIssue(jql);
 			if (jsObj.containsKey("issues")) {
@@ -213,10 +214,5 @@ public class JiraService {
             e.printStackTrace();
         }
         return codeList;
-    }
-
-    public static void main(String[] args) {
-        JiraService jiraService = new JiraService("");
-        jiraService.queryIssueKeyForSpecificDeploy();
     }
 }
