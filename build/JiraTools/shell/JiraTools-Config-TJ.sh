@@ -3,8 +3,6 @@
 readonly PROJECT_WORKSPACE="${JENKINS_HOME}/workspace/activity2.0"
 # JiraTools的目录：请修改，默认放到项目根目录
 readonly JIRATOOLS_PATH="${PROJECT_WORKSPACE}/JiraTools"
-# 是否全量发布
-readonly UPDATE_ALL_SOURCE="true"
 
 # tomcat路径
 readonly TOMCAT_HOME="/home/jenkins/apache-tomcat-7.0.76"

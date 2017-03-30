@@ -28,34 +28,39 @@ public class App {
 		JiraService js = new JiraService(PropertiesUtils.get("jira_poject_key"));
 		FisheyeService fs = new FisheyeService(PropertiesUtils.get("fisheye_repo_name"));
 
-		// 三个层次获取jira key，从具体到宽泛
-        // 1、JIRA_KEYS_MODE_ARGS：命令行参数中，指定了jira key
-        // 2、JIRA_KEYS_MODE_SPECIFIC：通过查询特定jira获取到描述信息中的jira key，对应配置文件中的jira_key_for_specific_deploy
-        // 3、JIRA_KEYS_MODE_AUTO：通过上次发布时间和状态，获取jira key
+		// 保存需要发布的Jira key
 		String[] jiraKeyArr = new String[]{};
-		String jiraKeyMode = "";
+        // 根据Jira keys获取关联的代码清单
+        String[] codeList = new String[]{};
+
 		if (StringUtils.isNotEmpty(jiraKeys)) {
-		    // 命令参数中的key
+		    // 1、从命令参数中的key
             jiraKeyArr = jiraKeys.split(",");
-            jiraKeyMode = "JIRA_KEYS_MODE_ARGS";
+            System.out.println("JIRA_KEYS_MODE_ARGS：" + ArrayUtils.toString(jiraKeyArr));
 		} else {
-		    // jira_key_for_specific_deploy方式
+		    // 2、jira_key_for_specific_deploy方式
             jiraKeyArr = js.queryIssueKeyForSpecificDeploy();
-            jiraKeyMode = "JIRA_KEYS_MODE_SPECIFIC";
-            if (ArrayUtils.isEmpty(jiraKeyArr)) {
-                // 根据状态查询需要发布的Jira key
-                jiraKeyArr = js.queryIssueKeyForNextDeploy(lastDeployDate, PropertiesUtils.get("jira_status_from"), PropertiesUtils.get("jira_status_to"));
-                jiraKeyMode = "JIRA_KEYS_MODE_AUTO";
+            if (ArrayUtils.isNotEmpty(jiraKeyArr)) {
+                System.out.println("JIRA_KEYS_MODE_SPECIFIC：" + ArrayUtils.toString(jiraKeyArr));
+            } else {
+                String deployMode = PropertiesUtils.get("deploy_mode");
+                if (Const.DEPLOY_MODE_INCREMENT.equals(deployMode)) {
+                    // 3、根据状态查询需要发布的Jira key
+                    jiraKeyArr = js.queryIssueKeyForNextDeploy(lastDeployDate, PropertiesUtils.get("jira_status_from"), PropertiesUtils.get("jira_status_to"));
+                    System.out.println("JIRA_KEYS_MODE_AUTO：" + ArrayUtils.toString(jiraKeyArr));
+
+                } else if (Const.DEPLOY_MODE_FULL.equals(deployMode)) {
+                    // 4、全量发布
+                    codeList = new String[]{"/"};
+                    System.out.println("JIRA_KEYS_MODE_ALL：ALL");
+                } else {
+                    System.out.println(MessageFormat.format(Const.MSG_ERROR, "deploy mode parameter error"));
+                }
             }
 		}
 
         String result = Const.MSG_SUCCESS;
-		if (null != jiraKeyArr && jiraKeyArr.length > 0) {
-            System.out.println(jiraKeyMode + ":" + ArrayUtils.toString(jiraKeyArr));
-
-            // 根据Jira keys获取关联的代码清单
-            String[] codeList = new String[]{};
-
+		if (ArrayUtils.isNotEmpty(jiraKeyArr)) {
             // Fisheye方式方式获取代码清单
             if ("0".equals(PropertiesUtils.get("code_list_mode")) || "1".equals(PropertiesUtils.get("code_list_mode"))) {
                 String[] codeListByFisheye = fs.queryCodeListByJiraKeys(jiraKeyArr);
@@ -67,6 +72,10 @@ public class App {
                 String[] codeListByComment = js.queryCodeListFromCustomFieldByKeys(jiraKeyArr);
                 codeList = ArrayUtils.addAll(codeList, codeListByComment);
             }
+        }
+
+        // 生产代码清单列表
+        if (ArrayUtils.isNotEmpty(codeList)) {
             result = fs.saveCodeListToFile(codeList);
         }
 		System.out.println(result);

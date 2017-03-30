@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="ant-jmeter-test" default="run" basedir=".">
+<project name="ant-jmeter-test" default="run" basedir="../deploy">
     <tstamp>
         <format property="time" pattern="yyyyMMddhhmm" />
     </tstamp>
+    <property name="workspace" value="/app/mgr/.jenkins/workspace/tianjin" />
     <property name="jmeter.home" value="/app/mgr/jenkins-tools/apache-jmeter-2.12" />
-    <property name="jmeter.result.jtl.dir" value="/app/mgr/.jenkins/workspace/tianjin/JiraTools/deploy/test-result/jtl" />
-    <property name="jmeter.result.html.dir" value="/app/mgr/.jenkins/workspace/tianjin/JiraTools/deploy/test-result/html" />
+    <property name="jmeter.result.jtl.dir" value="${workspace}/JiraTools/test/result/jtl" />
+    <property name="jmeter.result.html.dir" value="${workspace}/JiraTools/test/result/html" />
     <property name="ReportName" value="TestReport" />
     <property name="jmeter.result.jtlName" value="${jmeter.result.jtl.dir}/${ReportName}-${build.number}.jtl" />
     <property name="jmeter.result.htmlName" value="${jmeter.result.html.dir}/${ReportName}-${build.number}.html" />
@@ -19,7 +20,7 @@
     <target name="test">
         <taskdef name="jmeter" classname="org.programmerplanet.ant.taskdefs.jmeter.JMeterTask" />
         <jmeter jmeterhome="${jmeter.home}" resultlog="${jmeter.result.jtlName}">
-            <testplans dir="/app/mgr/.jenkins/workspace/tianjin/JiraTools/deploy/test-case" includes="*.jmx" />
+            <testplans dir="${workspace}/JiraTools/test" includes="*.jmx" />
 
            <property name="jmeter.save.saveservice.output_format" value="xml"/>
 

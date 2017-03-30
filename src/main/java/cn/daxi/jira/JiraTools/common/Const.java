@@ -1,10 +1,7 @@
 package cn.daxi.jira.JiraTools.common;
 
 import cn.daxi.jira.JiraTools.App;
-import cn.daxi.jira.JiraTools.utils.Base64Utils;
 import cn.daxi.jira.JiraTools.utils.PropertiesUtils;
-
-import java.text.MessageFormat;
 
 public class Const {
 	public static int CONNECT_TIMEOUT = 30000;
@@ -17,6 +14,12 @@ public class Const {
 	public static String MSG_SUCCESS = "success";
 	public static String MSG_ERROR = "error with {0}";
 	public static String DEPLOY_LOG_DIR = "/home/deploy/";
+
+	// 优先级：DEPLOY_MODE_ARGS > DEPLOY_MODE_SPECIFIC > DEPLOY_MODE_AUTO > DEPLOY_MODE_ALL
+    // 发布模式：全量
+    public static String DEPLOY_MODE_FULL = "full";
+    // 发布模式：增量
+    public static String DEPLOY_MODE_INCREMENT = "increment";
 
 	static {
 		try {

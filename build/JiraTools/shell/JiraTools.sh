@@ -1,5 +1,6 @@
 #!/bin/bash
 # 引入配置文件
+# 请修改这里引入自己的配置文件
 source $(cd `dirname $0`; pwd)/JiraTools-Config-BC.sh
 
 # 获取当前时间
@@ -8,70 +9,64 @@ echo "-----current_date：${current_date}-----"
 
 # 更新代码
 function updateSource() {
-    if [ "${UPDATE_ALL_SOURCE}"x = "true"x ]
-    then
-        # 全量更新代码
-        svn update ${PROJECT_WORKSPACE}
-    else
-        # 从文件获取上次代码的更新时间
-        last_update_date=$(tail -1 ${JIRATOOLS_PATH}/deploy/deploy.info)
-        if [ "$last_update_date" = "" ]
-            then last_update_date="198501290000"
-        fi
-        echo "-----last_update_date：${last_update_date}-----"
+    # 从文件获取上次代码的更新时间
+    last_update_date=$(tail -1 ${JIRATOOLS_PATH}/deploy/deploy.info)
+    if [ "$last_update_date" = "" ]
+        then last_update_date="198501290000"
+    fi
+    echo "-----last_update_date：${last_update_date}-----"
 
-        echo "-----JIRA_ISSUE_KEY：${JIRA_ISSUE_KEY}-----"
+    echo "-----JIRA_ISSUE_KEY：${JIRA_ISSUE_KEY}-----"
 
-        # 调用Java将从上次发布时间开始到现在，
-        # jira状态从from变为to的单子关联的代码保持成代码清单文件
-        result=$(java -jar ${JIRATOOLS_PATH}/JiraTools.jar "$JIRA_ISSUE_KEY" $last_update_date)
+    # 调用Java将从上次发布时间开始到现在，
+    # jira状态从from变为to的单子关联的代码保持成代码清单文件
+    result=$(java -jar ${JIRATOOLS_PATH}/JiraTools.jar "$JIRA_ISSUE_KEY" $last_update_date)
 
-        echo "-----The jira key and source list is-----"
-        echo $result
+    echo "-----The jira key and source list is-----"
+    echo $result
 
-        # 包含错误直接退出
-        if [[ "$result" =~ "error" ]]
-            then exit 1
-        fi
+    # 包含错误直接退出
+    if [[ "$result" =~ "error" ]]
+        then exit 1
+    fi
 
-        # 执行成功
-        if [[ "$result" =~ "success" ]]
+    # 执行成功
+    if [[ "$result" =~ "success" ]]
+        then
+        # 该文件中保存了需要更新的代码清单
+        code_list_file="${JIRATOOLS_PATH}/deploy/code-list-update.txt"
+        # 该文件中保存了需要更新的脚本清单
+        sql_file_list_file="${JIRATOOLS_PATH}/deploy/sql-file-list-update.txt"
+        # 更新代码清单
+        echo "-----start to update the code list-----"
+        for line in $(cat $code_list_file)
+        do
+            svn update ${PROJECT_WORKSPACE}/$line
+        done
+        # 将代码转入待执行/编译清单
+        cat $code_list_file >> ${JIRATOOLS_PATH}/deploy/code-list-execute.txt
+        : > $code_list_file;
+
+        # 更新sql文件清单
+        echo "-----start to update the sql file list-----"
+        for line in $(cat $sql_file_list_file)
+        do
+            svn update ${PROJECT_WORKSPACE}/$line
+        done
+        # 将脚本转入待执行/编译清单
+        cat $sql_file_list_file >> ${JIRATOOLS_PATH}/deploy/sql-file-list-execute.txt
+        : > $sql_file_list_file;
+
+        # 代码的最后更新时间
+        if [[ "$result" =~ "JIRA_KEYS_MODE_AUTO" || "$result" =~ "JIRA_KEYS_MODE_ALL" ]]
             then
-            # 该文件中保存了需要更新的代码清单
-            code_list_file="${JIRATOOLS_PATH}/deploy/code-list-update.txt"
-            # 该文件中保存了需要更新的脚本清单
-            sql_file_list_file="${JIRATOOLS_PATH}/deploy/sql-file-list-update.txt"
-            # 更新代码清单
-            echo "-----start to update the code list-----"
-            for line in $(cat $code_list_file)
-            do
-                svn update ${PROJECT_WORKSPACE}/$line
-            done
-            # 将代码转入待执行/编译清单
-            cat $code_list_file >> ${JIRATOOLS_PATH}/deploy/code-list-execute.txt
-            : > $code_list_file;
-
-            # 更新sql文件清单
-            echo "-----start to update the sql file list-----"
-            for line in $(cat $sql_file_list_file)
-            do
-                svn update ${PROJECT_WORKSPACE}/$line
-            done
-            # 将脚本转入待执行/编译清单
-            cat $sql_file_list_file >> ${JIRATOOLS_PATH}/deploy/sql-file-list-execute.txt
-            : > $sql_file_list_file;
-
-            # 代码的最后更新时间
-            if [[ "$result" =~ "JIRA_KEYS_MODE_AUTO" ]]
-                then
-                echo "-----update the last deploy date-----"
-                echo $current_date >> ${JIRATOOLS_PATH}/deploy/deploy.info
-            fi
-            echo "-----update completed！-----"
-        else
-            echo $result
-            exit 1
+            echo "-----update the last deploy date-----"
+            echo $current_date >> ${JIRATOOLS_PATH}/deploy/deploy.info
         fi
+        echo "-----update completed！-----"
+    else
+        echo $result
+        exit 1
     fi
 }
 
